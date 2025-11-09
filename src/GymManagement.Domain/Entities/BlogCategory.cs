@@ -1,23 +1,23 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 
 namespace GymManagement.Domain.Entities
 {
     [BsonIgnoreExtraElements]
-    public class UserRole
+    public class BlogCategory
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("user_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string UserId { get; set; }
+        [BsonElement("name")]
+        public string Name { get; set; }
 
-        [BsonElement("role_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string RoleId { get; set; }
+        [BsonElement("slug")]
+        public string Slug { get; set; } // dùng cho URL, ví dụ "workouts"
+
+        [BsonElement("postCount")]
+        public int PostCount { get; set; } = 0; // số bài viết trong category
 
         [BsonElement("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
