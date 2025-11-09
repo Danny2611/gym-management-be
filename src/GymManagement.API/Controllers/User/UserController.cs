@@ -1,73 +1,96 @@
+using GymManagement.Application.Interfaces.Services;
+using GymManagement.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymManagement.API.Controllers.User
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class MemberController : ControllerBase
     {
-        // GET: api/user/getuser
-        [HttpGet("getuser")]
-        public IActionResult GetUser()
-        {
-            var response = new
-            {
-                success = true,
-                message = "User retrieved successfully",
-                data = new
-                {
-                    name = "Trung",
-                    role = "Member",
-                    timestamp = DateTime.Now
-                }
-            };
+        private readonly IMemberService _memberService;
 
-            return Ok(response);
+        public MemberController(IMemberService memberService)
+        {
+            _memberService = memberService;
         }
 
-        // GET: api/user/{id}
+        /// <summary>
+        /// Lấy danh sách tất cả members
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetAllMembers()
+        {
+            try
+            {
+                var members = await _memberService.GetAllMembersAsync();
+                return Ok(new
+                {
+                    success = true,
+                    data = members,
+                    message = "Get members successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Lấy member theo ID
+        /// </summary>
         [HttpGet("{id}")]
-        public IActionResult GetUserById(int id)
+        public async Task<IActionResult> GetMemberById(string id)
         {
-            var response = new
+            try
             {
-                success = true,
-                message = $"User with ID {id} retrieved",
-                data = new
+                var member = await _memberService.GetMemberByIdAsync(id);
+                return Ok(new
                 {
-                    id = id,
-                    name = "Trung",
-                    email = "trung@example.com"
-                }
-            };
-
-            return Ok(response);
+                    success = true,
+                    data = member,
+                    message = "Get member successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
 
-        // POST: api/user
+        /// <summary>
+        /// Tạo member mới (để test)
+        /// </summary>
         [HttpPost]
-        public IActionResult CreateUser([FromBody] CreateUserRequest request)
+        public async Task<IActionResult> CreateMember([FromBody] Member member)
         {
-            var response = new
+            try
             {
-                success = true,
-                message = "User created successfully",
-                data = new
+                var newMember = await _memberService.CreateMemberAsync(member);
+                return Ok(new
                 {
-                    id = 1,
-                    name = request.Name,
-                    email = request.Email
-                }
-            };
-
-            return Created("api/user/1", response);
+                    success = true,
+                    data = newMember,
+                    message = "Create member successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
-    }
-
-    // DTO cho request
-    public class CreateUserRequest
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
     }
 }
