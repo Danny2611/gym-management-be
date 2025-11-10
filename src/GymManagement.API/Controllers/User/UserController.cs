@@ -1,11 +1,12 @@
 using GymManagement.Application.Interfaces.Services;
 using GymManagement.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
 namespace GymManagement.API.Controllers.User
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/member")]
+     [Authorize] 
     public class MemberController : ControllerBase
     {
         private readonly IMemberService _memberService;

@@ -49,5 +49,11 @@ namespace GymManagement.Infrastructure.Repositories
         {
             return await _context.Members.Find(m => m.Email == email).FirstOrDefaultAsync();
         }
+
+        public async Task<bool> ExistsAsync(string email)
+        {
+            var count = await _context.Members.CountDocumentsAsync(m => m.Email == email);
+            return count > 0;
+        }
     }
 }
