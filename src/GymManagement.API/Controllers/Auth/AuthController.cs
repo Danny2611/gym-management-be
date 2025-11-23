@@ -56,7 +56,60 @@ namespace GymManagement.API.Controllers.Auth
                 {
                     success = true,
                     data = response,
-                    message = "Đăng ký thành công"
+                     message = response.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Xác thực OTP
+        /// </summary>
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOTP([FromBody] VerifyOTPRequest request)
+        {
+            try
+            {
+                var response = await _authService.VerifyOTPAsync(request);
+                
+                return Ok(new
+                {
+                    success = true,
+                    data = response,
+                    message = "Xác thực tài khoản thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gửi lại OTP
+        /// </summary>
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOTP([FromBody] ResendOTPRequest request)
+        {
+            try
+            {
+                await _authService.ResendOTPAsync(request.Email);
+                
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã gửi lại mã OTP. Vui lòng kiểm tra email."
                 });
             }
             catch (Exception ex)
