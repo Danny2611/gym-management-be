@@ -1,10 +1,10 @@
-using GymManagement.Domain.Entities;
-
 namespace GymManagement.Application.Interfaces.Services
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateToken(Member member);
-        DateTime GetTokenExpiry();
+        string GenerateAccessToken(string userId, string roleName);
+        string GenerateRefreshToken(string userId, string roleName);
+        DateTime GetAccessTokenExpiry();
+        DateTime GetRefreshTokenExpiry();
     }
 }
