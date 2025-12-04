@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using BCrypt.Net;
 
 namespace GymManagement.Domain.Entities
 {
@@ -55,5 +56,9 @@ namespace GymManagement.Domain.Entities
 
         [BsonElement("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-    }
+
+public bool VerifyPassword(string inputPassword)
+{
+    return BCrypt.Verify(inputPassword, this.PasswordHash);
+}}
 }

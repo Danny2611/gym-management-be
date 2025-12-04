@@ -193,6 +193,90 @@ public async Task<IActionResult> UpdateAvatar([FromForm] UploadAvatarDto dto)
         data = new { avatar = newAvatarUrl }
     });
 }
+[Authorize]
+[HttpPut("email")]
+public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
+{
+    if (string.IsNullOrWhiteSpace(request.Email))
+        return BadRequest(new
+        {
+            success = false,
+            message = "Email mới không được để trống"
+        });
+
+    var memberId = GetUserId(); // Lấy từ token
+
+    try
+    {
+        var result = await _memberService.UpdateEmailAsync(memberId, request.Email);
+
+        if (!result)
+            return NotFound(new
+            {
+                success = false,
+                message = "Không tìm thấy thông tin hội viên"
+            });
+
+        return Ok(new
+        {
+            success = true,
+            message = "Đã cập nhật email, vui lòng xác thực email mới",
+            data = new { email = request.Email }
+        });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new
+        {
+            success = false,
+            message = ex.Message
+        });
+    }
+}
+
+[Authorize]
+[HttpPost("deactivate")]
+public async Task<IActionResult> DeactivateAccount([FromBody] DeactivateAccountRequest request)
+{
+    if (string.IsNullOrWhiteSpace(request.Password))
+    {
+        return BadRequest(new
+        {
+            success = false,
+            message = "Vui lòng nhập mật khẩu để xác nhận"
+        });
+    }
+
+    var memberId = GetUserId();
+
+    try
+    {
+        var result = await _memberService.DeactivateAccountAsync(memberId, request.Password);
+
+        if (!result)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Không tìm thấy thông tin hội viên"
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = "Tài khoản đã bị vô hiệu hóa"
+        });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new
+        {
+            success = false,
+            message = ex.Message
+        });
+    }
+}
 
 
 }
