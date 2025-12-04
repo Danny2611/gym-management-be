@@ -93,5 +93,51 @@ namespace GymManagement.API.Controllers.User
                 });
             }
         }
+
+
+    /// <summary>
+    /// Lấy thông tin profile của user hiện tại từ JWT
+    /// </summary>
+
+    [HttpGet("current-profile")]
+public async Task<IActionResult> GetCurrentProfile()
+{
+    try
+    {
+        var userId = User.FindFirst("userId")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Không tìm thấy thông tin người dùng"
+            });
+        }
+
+        var member = await _memberService.GetMemberWithRoleAsync(userId);
+
+        var dto = new MemberProfileDto
+        {
+            Id = member.Id,
+            FullName = member.FullName,
+            Email = member.Email,
+            Phone = member.Phone,
+            Address = member.Address,
+            BirthDate = member.BirthDate,
+            AvatarUrl = member.AvatarUrl,
+            RoleName = member.Role?.Name?.ToLower() ?? ""
+        };
+
+        return Ok(new { success = true, data = dto });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { success = false, message = ex.Message });
     }
 }
+
+
+
+}
+    }
