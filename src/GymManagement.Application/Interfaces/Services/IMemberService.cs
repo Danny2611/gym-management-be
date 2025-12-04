@@ -7,5 +7,7 @@ namespace GymManagement.Application.Interfaces.Services
         Task<List<Member>> GetAllMembersAsync();
         Task<Member> GetMemberByIdAsync(string id);
         Task<Member> CreateMemberAsync(Member member);
+        Task<Member> UpdateProfileAsync(string userId, MemberUpdateRequest request);
+
     }
 }

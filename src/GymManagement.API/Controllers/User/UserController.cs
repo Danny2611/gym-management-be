@@ -137,6 +137,40 @@ public async Task<IActionResult> GetCurrentProfile()
     }
 }
 
+[HttpPut("profile")]
+public async Task<IActionResult> UpdateProfile([FromBody] MemberUpdateRequest request)
+{
+    try
+    {
+        var userId = User.FindFirst("userId")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Không tìm thấy thông tin người dùng"
+            });
+        }
+
+        var updatedMember = await _memberService.UpdateProfileAsync(userId, request);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Cập nhật thông tin thành công",
+            data = updatedMember
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            success = false,
+            message = ex.Message
+        });
+    }
+}
 
 
 }
