@@ -4,6 +4,7 @@ using GymManagement.Application.Services;
 using GymManagement.Infrastructure.Data;
 using GymManagement.Infrastructure.Identity;
 using GymManagement.Infrastructure.Repositories;
+using GymManagement.Infrastructure.Services;
 
 namespace GymManagement.API.Extensions
 {
@@ -14,8 +15,12 @@ namespace GymManagement.API.Extensions
             // MongoDB Context
             services.AddSingleton<MongoDbContext>();
 
+
             // JWT Token Generator
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+            // Email Service
+            services.AddScoped<IEmailService, EmailService>();
 
             // Repositories
             services.AddScoped<IMemberRepository, MemberRepository>();
@@ -23,7 +28,7 @@ namespace GymManagement.API.Extensions
             // Services
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IAuthService, AuthService>();
-
+            services.AddScoped<IRoleRepository, RoleRepository>();
             return services;
         }
     }

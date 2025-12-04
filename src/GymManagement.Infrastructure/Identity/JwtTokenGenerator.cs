@@ -1,10 +1,9 @@
-using GymManagement.Application.Interfaces.Services;
-using GymManagement.Domain.Entities;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using GymManagement.Application.Interfaces.Services;
 
 namespace GymManagement.Infrastructure.Identity
 {
@@ -17,40 +16,68 @@ namespace GymManagement.Infrastructure.Identity
             _configuration = configuration;
         }
 
-        public string GenerateToken(Member member)
+        public string GenerateAccessToken(string userId, string roleName)
         {
-            var secret = _configuration["JwtSettings:Secret"];
-            var issuer = _configuration["JwtSettings:Issuer"];
-            var audience = _configuration["JwtSettings:Audience"];
-            var expiryMinutes = int.Parse(_configuration["JwtSettings:ExpiryMinutes"]);
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, member.Id),
-                new Claim(JwtRegisteredClaimNames.Email, member.Email),
-                new Claim(ClaimTypes.Name, member.Name),
-                new Claim(ClaimTypes.Role, member.Role ?? "member"),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, roleName),
+                new Claim("userId", userId),
+                new Claim("role", roleName)
             };
 
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] ?? "your-secret-key-min-32-characters-long"));
+            
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+                expires: DateTime.UtcNow.AddHours(1), // Access token 1 giờ
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public DateTime GetTokenExpiry()
+        public string GenerateRefreshToken(string userId, string roleName)
         {
-            var expiryMinutes = int.Parse(_configuration["JwtSettings:ExpiryMinutes"]);
-            return DateTime.UtcNow.AddMinutes(expiryMinutes);
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("userId", userId),
+                new Claim("role", roleName),
+                new Claim("tokenType", "refresh")
+            };
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] ?? "your-secret-key-min-32-characters-long"));
+            
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7), // Refresh token 7 ngày
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public DateTime GetAccessTokenExpiry()
+        {
+            return DateTime.UtcNow.AddHours(1);
+        }
+
+        public DateTime GetRefreshTokenExpiry()
+        {
+            return DateTime.UtcNow.AddDays(7);
         }
     }
 }
