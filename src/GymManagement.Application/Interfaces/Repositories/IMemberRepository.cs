@@ -10,5 +10,7 @@ namespace GymManagement.Application.Interfaces.Repositories
         Task<bool> UpdateAsync(string id, Member member);
         Task<bool> DeleteAsync(string id);
         Task<Member> GetByEmailAsync(string email);
+        Task<Member?> GetByIdWithRoleAsync(string id);
+
     }
 }

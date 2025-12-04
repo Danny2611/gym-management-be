@@ -55,5 +55,12 @@ namespace GymManagement.Infrastructure.Repositories
             var count = await _context.Members.CountDocumentsAsync(m => m.Email == email);
             return count > 0;
         }
+        public async Task<Member?> GetByIdWithRoleAsync(string id)
+{
+    return await _context.Members
+        .Include(m => m.Role)
+        .FirstOrDefaultAsync(m => m.Id == id);
+}
+
     }
 }
