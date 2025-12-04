@@ -173,5 +173,27 @@ public async Task<IActionResult> UpdateProfile([FromBody] MemberUpdateRequest re
 }
 
 
+[Authorize(Roles = "Member")]
+[HttpPut("avatar")]
+public async Task<IActionResult> UpdateAvatar([FromForm] UploadAvatarDto dto)
+{
+    if (dto.Avatar == null)
+        return BadRequest(new { success = false, message = "Không tìm thấy file avatar" });
+
+    var userId = User.FindFirst("id")?.Value;
+    if (userId == null)
+        return Unauthorized(new { success = false, message = "Không tìm thấy user" });
+
+    var newAvatarUrl = await _memberService.UpdateAvatarAsync(Guid.Parse(userId), dto.Avatar);
+
+    return Ok(new
+    {
+        success = true,
+        message = "Cập nhật avatar thành công",
+        data = new { avatar = newAvatarUrl }
+    });
+}
+
+
 }
     }

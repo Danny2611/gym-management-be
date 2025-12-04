@@ -83,6 +83,39 @@ public async Task<Member> GetMemberWithRoleAsync(string id)
     return member;
 }
 
+
+
+
+public async Task<string> UpdateAvatarAsync(Guid memberId, IFormFile avatarFile)
+{
+    var member = await _context.Members.FirstOrDefaultAsync(x => x.Id == memberId);
+    if (member == null)
+        throw new Exception("Không tìm thấy hội viên");
+
+    // --------- Upload file lên Cloudinary (hoặc local) ----------
+    var uploadResult = await _fileStorage.UploadAsync(avatarFile);
+
+    if (uploadResult == null)
+        throw new Exception("Upload avatar thất bại");
+
+    // --------- Xóa avatar cũ nếu có ----------
+    if (!string.IsNullOrEmpty(member.AvatarPublicId))
+    {
+        await _fileStorage.DeleteAsync(member.AvatarPublicId);
+    }
+
+    // --------- Cập nhật dữ liệu ----------
+    member.Avatar = uploadResult.Url;
+    member.AvatarPublicId = uploadResult.PublicId;
+    member.UpdatedAt = DateTime.UtcNow;
+
+    await _context.SaveChangesAsync();
+
+    return uploadResult.Url;
+}
+
+
+
     }
     
 }
