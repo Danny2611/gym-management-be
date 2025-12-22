@@ -1,3 +1,4 @@
+// GymManagement.Infrastructure/Repositories/MemberRepository.cs
 using GymManagement.Application.Interfaces.Repositories;
 using GymManagement.Domain.Entities;
 using GymManagement.Infrastructure.Data;
@@ -7,60 +8,47 @@ namespace GymManagement.Infrastructure.Repositories
 {
     public class MemberRepository : IMemberRepository
     {
-        private readonly MongoDbContext _context;
+        private readonly IMongoCollection<Member> _members;
 
         public MemberRepository(MongoDbContext context)
         {
-            _context = context;
+            _members = context.Members;
         }
 
         public async Task<List<Member>> GetAllAsync()
         {
-            return await _context.Members.Find(_ => true).ToListAsync();
+            return await _members.Find(_ => true).ToListAsync();
         }
 
         public async Task<Member> GetByIdAsync(string id)
         {
-            return await _context.Members.Find(m => m.Id == id).FirstOrDefaultAsync();
-        }
-
-        public async Task<Member> CreateAsync(Member member)
-        {
-            member.CreatedAt = DateTime.Now;
-            member.UpdatedAt = DateTime.Now;
-            await _context.Members.InsertOneAsync(member);
-            return member;
-        }
-
-        public async Task<bool> UpdateAsync(string id, Member member)
-        {
-            member.UpdatedAt = DateTime.Now;
-            var result = await _context.Members.ReplaceOneAsync(m => m.Id == id, member);
-            return result.ModifiedCount > 0;
-        }
-
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var result = await _context.Members.DeleteOneAsync(m => m.Id == id);
-            return result.DeletedCount > 0;
+            return await _members.Find(m => m.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task<Member> GetByEmailAsync(string email)
         {
-            return await _context.Members.Find(m => m.Email == email).FirstOrDefaultAsync();
+            return await _members.Find(m => m.Email == email).FirstOrDefaultAsync();
         }
 
-        public async Task<bool> ExistsAsync(string email)
+        public async Task<Member> GetByPhoneAsync(string phone)
         {
-            var count = await _context.Members.CountDocumentsAsync(m => m.Email == email);
-            return count > 0;
+            return await _members.Find(m => m.Phone == phone).FirstOrDefaultAsync();
         }
-        public async Task<Member?> GetByIdWithRoleAsync(string id)
-{
-    return await _context.Members
-        .Include(m => m.Role)
-        .FirstOrDefaultAsync(m => m.Id == id);
-}
 
+        public async Task<Member> CreateAsync(Member member)
+        {
+            await _members.InsertOneAsync(member);
+            return member;
+        }
+
+        public async Task UpdateAsync(string id, Member member)
+        {
+            await _members.ReplaceOneAsync(m => m.Id == id, member);
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            await _members.DeleteOneAsync(m => m.Id == id);
+        }
     }
 }

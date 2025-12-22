@@ -29,6 +29,7 @@ namespace GymManagement.API.Extensions
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IFileStorageService, FileStorageService>();
             return services;
         }
     }
