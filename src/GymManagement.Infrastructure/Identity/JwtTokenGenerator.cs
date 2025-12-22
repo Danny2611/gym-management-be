@@ -28,13 +28,13 @@ namespace GymManagement.Infrastructure.Identity
             };
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] ?? "your-secret-key-min-32-characters-long"));
+                Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] ?? "your-secret-key-min-32-characters-long"));
             
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1), // Access token 1 giờ
                 signingCredentials: credentials
@@ -55,13 +55,13 @@ namespace GymManagement.Infrastructure.Identity
             };
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] ?? "your-secret-key-min-32-characters-long"));
+                Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] ?? "your-secret-key-min-32-characters-long"));
             
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(7), // Refresh token 7 ngày
                 signingCredentials: credentials

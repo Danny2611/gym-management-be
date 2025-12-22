@@ -112,5 +112,67 @@ namespace GymManagement.Infrastructure.Services
                 await client.DisconnectAsync(true);
             }
         }
+    
+        public async Task SendChangeEmailOtpAsync(string email, string otp)
+{
+    var message = new MimeMessage();
+
+    var fromName = _configuration["EmailSettings:FromName"];
+    var fromEmail = _configuration["EmailSettings:FromEmail"];
+    message.From.Add(new MailboxAddress(fromName, fromEmail));
+
+    message.To.Add(new MailboxAddress("", email));
+    message.Subject = "Xác nhận thay đổi email – FittLife";
+
+    var bodyBuilder = new BodyBuilder
+    {
+        HtmlBody = $@"
+        <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"">
+            <h2 style=""color: #ff9800;"">Xác nhận thay đổi email</h2>
+            <p>Bạn vừa yêu cầu <strong>thay đổi địa chỉ email</strong> cho tài khoản FittLife.</p>
+
+            <p>Vui lòng nhập mã OTP bên dưới để xác nhận email mới:</p>
+
+            <div style=""background-color: #f4f4f4; padding: 20px; text-align: center;
+                        font-size: 32px; letter-spacing: 5px; margin: 20px 0;
+                        font-weight: bold; color: #ff9800;"">
+                {otp}
+            </div>
+
+            <p style=""color: #666;"">
+                Mã OTP có hiệu lực trong vòng <strong>10 phút</strong>.
+            </p>
+
+            <p style=""color: #999; font-size: 14px;"">
+                Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email hoặc đổi mật khẩu ngay.
+            </p>
+
+            <hr style=""border: none; border-top: 1px solid #eee; margin: 30px 0;"">
+
+            <p style=""color: #666;"">
+                Trân trọng,<br>
+                <strong>Đội ngũ FittLife</strong>
+            </p>
+        </div>"
+    };
+
+    message.Body = bodyBuilder.ToMessageBody();
+
+    using (var client = new SmtpClient())
+    {
+        var smtpHost = _configuration["EmailSettings:SmtpHost"];
+        var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+        var smtpUser = _configuration["EmailSettings:SmtpUser"];
+        var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+
+        await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+        await client.AuthenticateAsync(smtpUser, smtpPassword);
+        await client.SendAsync(message);
+        await client.DisconnectAsync(true);
     }
+}
+
+    }
+
+    
 }

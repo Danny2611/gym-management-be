@@ -15,7 +15,7 @@ namespace GymManagement.Domain.Entities
         public string Name { get; set; }
 
         [BsonElement("avatar")]
-        public string Avatar { get; set; }
+        public string? Avatar { get; set; }
 
         [BsonElement("email")]
         public string Email { get; set; }
@@ -24,26 +24,26 @@ namespace GymManagement.Domain.Entities
         public string Password { get; set; }
 
         [BsonElement("gender")]
-        public string Gender { get; set; } // male, female, other
+        public string? Gender { get; set; } // male, female, other
 
         [BsonElement("phone")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [BsonElement("dateOfBirth")]
         public DateTime? DateOfBirth { get; set; }
 
         [BsonElement("address")]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         [BsonElement("role")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Role { get; set; }
+        public string  Role { get; set; }
 
         [BsonElement("status")]
         public string Status { get; set; } = "active"; // active, inactive, pending, banned
 
         [BsonElement("otp")]
-        public string Otp { get; set; }
+        public string? Otp { get; set; }
 
         [BsonElement("otpExpires")]
         public DateTime? OtpExpires { get; set; }
@@ -59,6 +59,9 @@ namespace GymManagement.Domain.Entities
 
 public bool VerifyPassword(string inputPassword)
 {
-    return BCrypt.Verify(inputPassword, this.PasswordHash);
-}}
+    return BCrypt.Net.BCrypt.Verify(inputPassword, this.Password);
+}
+
+
+}
 }
