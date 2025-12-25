@@ -1,12 +1,15 @@
+// GymManagement.API/Controllers/User/MemberController.cs
 using GymManagement.Application.Interfaces.Services;
 using GymManagement.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using GymManagement.Application.DTOs.User;
+
 namespace GymManagement.API.Controllers.User
 {
     [ApiController]
     [Route("api/member")]
-     [Authorize] 
+     [Authorize]
     public class MemberController : ControllerBase
     {
         private readonly IMemberService _memberService;
@@ -17,45 +20,35 @@ namespace GymManagement.API.Controllers.User
         }
 
         /// <summary>
-        /// Lấy danh sách tất cả members
+        /// Helper method to get userId from JWT token
         /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetAllMembers()
+        private string GetUserId()
         {
-            try
-            {
-                var members = await _memberService.GetAllMembersAsync();
-                return Ok(new
-                {
-                    success = true,
-                    data = members,
-                    message = "Get members successfully"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
+            return User.FindFirst("userId")?.Value 
+                   ?? throw new UnauthorizedAccessException("Không tìm thấy thông tin người dùng");
         }
 
+
         /// <summary>
-        /// Lấy member theo ID
+        /// Get member by ID (public info only)
         /// </summary>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetMemberById(string id)
+        [HttpGet("{memberId}")]
+        public async Task<IActionResult> GetMemberById(string memberId)
         {
             try
             {
-                var member = await _memberService.GetMemberByIdAsync(id);
+                var member = await _memberService.GetMemberByIdAsync(memberId);
+                
+                // Return only public info
                 return Ok(new
                 {
                     success = true,
-                    data = member,
-                    message = "Get member successfully"
+                    data = new
+                    {
+                        id = member.Id,
+                        name = member.Name,
+                        avatar = member.Avatar
+                    }
                 });
             }
             catch (Exception ex)
@@ -68,20 +61,94 @@ namespace GymManagement.API.Controllers.User
             }
         }
 
+      
         /// <summary>
-        /// Tạo member mới (để test)
+        /// Get current user's profile
         /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> CreateMember([FromBody] Member member)
+        [HttpGet("current-profile")]
+        public async Task<IActionResult> GetCurrentProfile()
+        
         {
+        
             try
             {
-                var newMember = await _memberService.CreateMemberAsync(member);
+                var userId = GetUserId();
+                var profile = await _memberService.GetCurrentProfileAsync(userId);
                 return Ok(new
                 {
                     success = true,
-                    data = newMember,
-                    message = "Create member successfully"
+                    data = profile
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Update current user's profile
+        /// </summary>
+        [HttpPatch("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] MemberUpdateRequest request)
+        {
+            try
+            {
+                var userId = GetUserId();
+             
+                // Validate model state (like Express validator)
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Dữ liệu không hợp lệ",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                            .ToList()
+                    });
+                }
+
+                var result = await _memberService.UpdateProfileAsync(userId, request);
+
+                if (!result)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy thông tin hội viên"
+                    });
+                }
+
+                // Get updated profile
+                var updatedProfile = await _memberService.GetCurrentProfileAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật thông tin thành công",
+                    data = updatedProfile
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
                 });
             }
             catch (Exception ex)
@@ -94,190 +161,156 @@ namespace GymManagement.API.Controllers.User
             }
         }
 
-
-    /// <summary>
-    /// Lấy thông tin profile của user hiện tại từ JWT
-    /// </summary>
-
-    [HttpGet("current-profile")]
-public async Task<IActionResult> GetCurrentProfile()
-{
-    try
-    {
-        var userId = User.FindFirst("userId")?.Value;
-
-        if (string.IsNullOrEmpty(userId))
+        /// <summary>
+        /// Update profile avatar
+        /// </summary>
+        [HttpPut("avatar")]
+        public async Task<IActionResult> UpdateAvatar([FromForm] UploadAvatarDto dto)
         {
-            return Unauthorized(new
+            try
             {
-                success = false,
-                message = "Không tìm thấy thông tin người dùng"
-            });
+                if (dto.Avatar == null)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy file avatar"
+                    });
+                }
+
+                var userId = GetUserId();
+                var newAvatarUrl = await _memberService.UpdateAvatarAsync(userId, dto.Avatar);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật avatar thành công",
+                    data = new { avatar = newAvatarUrl }
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
 
-        var member = await _memberService.GetMemberWithRoleAsync(userId);
-
-        var dto = new MemberProfileDto
+        /// <summary>
+        /// Update email (requires verification)
+        /// </summary>
+        [HttpPut("email")]
+        public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
         {
-            Id = member.Id,
-            FullName = member.FullName,
-            Email = member.Email,
-            Phone = member.Phone,
-            Address = member.Address,
-            BirthDate = member.BirthDate,
-            AvatarUrl = member.AvatarUrl,
-            RoleName = member.Role?.Name?.ToLower() ?? ""
-        };
-
-        return Ok(new { success = true, data = dto });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new { success = false, message = ex.Message });
-    }
-}
-
-[HttpPut("profile")]
-public async Task<IActionResult> UpdateProfile([FromBody] MemberUpdateRequest request)
-{
-    try
-    {
-        var userId = User.FindFirst("userId")?.Value;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized(new
+            try
             {
-                success = false,
-                message = "Không tìm thấy thông tin người dùng"
-            });
+                if (string.IsNullOrWhiteSpace(request.Email))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Email mới không được để trống"
+                    });
+                }
+
+                var userId = GetUserId();
+                var result = await _memberService.UpdateEmailAsync(userId, request.Email);
+
+                if (!result)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy thông tin hội viên"
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã cập nhật email, vui lòng xác thực email mới",
+                    data = new { email = request.Email }
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
 
-        var updatedMember = await _memberService.UpdateProfileAsync(userId, request);
-
-        return Ok(new
+        /// <summary>
+        /// Deactivate account (requires password confirmation)
+        /// </summary>
+        [HttpPost("deactivate")]
+        public async Task<IActionResult> DeactivateAccount([FromBody] DeactivateAccountRequest request)
         {
-            success = true,
-            message = "Cập nhật thông tin thành công",
-            data = updatedMember
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new
-        {
-            success = false,
-            message = ex.Message
-        });
-    }
-}
-
-
-[Authorize(Roles = "Member")]
-[HttpPut("avatar")]
-public async Task<IActionResult> UpdateAvatar([FromForm] UploadAvatarDto dto)
-{
-    if (dto.Avatar == null)
-        return BadRequest(new { success = false, message = "Không tìm thấy file avatar" });
-
-    var userId = User.FindFirst("id")?.Value;
-    if (userId == null)
-        return Unauthorized(new { success = false, message = "Không tìm thấy user" });
-
-    var newAvatarUrl = await _memberService.UpdateAvatarAsync(Guid.Parse(userId), dto.Avatar);
-
-    return Ok(new
-    {
-        success = true,
-        message = "Cập nhật avatar thành công",
-        data = new { avatar = newAvatarUrl }
-    });
-}
-[Authorize]
-[HttpPut("email")]
-public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequest request)
-{
-    if (string.IsNullOrWhiteSpace(request.Email))
-        return BadRequest(new
-        {
-            success = false,
-            message = "Email mới không được để trống"
-        });
-
-    var memberId = GetUserId(); // Lấy từ token
-
-    try
-    {
-        var result = await _memberService.UpdateEmailAsync(memberId, request.Email);
-
-        if (!result)
-            return NotFound(new
+            try
             {
-                success = false,
-                message = "Không tìm thấy thông tin hội viên"
-            });
+                if (string.IsNullOrWhiteSpace(request.Password))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Vui lòng nhập mật khẩu để xác nhận"
+                    });
+                }
 
-        return Ok(new
-        {
-            success = true,
-            message = "Đã cập nhật email, vui lòng xác thực email mới",
-            data = new { email = request.Email }
-        });
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(new
-        {
-            success = false,
-            message = ex.Message
-        });
-    }
-}
+                var userId = GetUserId();
+                var result = await _memberService.DeactivateAccountAsync(userId, request.Password);
 
-[Authorize]
-[HttpPost("deactivate")]
-public async Task<IActionResult> DeactivateAccount([FromBody] DeactivateAccountRequest request)
-{
-    if (string.IsNullOrWhiteSpace(request.Password))
-    {
-        return BadRequest(new
-        {
-            success = false,
-            message = "Vui lòng nhập mật khẩu để xác nhận"
-        });
-    }
+                if (!result)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy thông tin hội viên"
+                    });
+                }
 
-    var memberId = GetUserId();
-
-    try
-    {
-        var result = await _memberService.DeactivateAccountAsync(memberId, request.Password);
-
-        if (!result)
-        {
-            return NotFound(new
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tài khoản đã bị vô hiệu hóa"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
             {
-                success = false,
-                message = "Không tìm thấy thông tin hội viên"
-            });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
-
-        return Ok(new
-        {
-            success = true,
-            message = "Tài khoản đã bị vô hiệu hóa"
-        });
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(new
-        {
-            success = false,
-            message = ex.Message
-        });
     }
 }
-
-
-}
-    }

@@ -4,5 +4,7 @@ namespace GymManagement.Application.Interfaces.Services
     {
         Task SendOTPEmailAsync(string email, string otp);
         Task SendWelcomeEmailAsync(string email, string name);
+
+        Task SendChangeEmailOtpAsync(string email, string otp);
     }
 }
