@@ -80,6 +80,7 @@ namespace GymManagement.Application.Services
                 Address = member.Address ?? "",
                 Avatar = member.Avatar ?? "",
                 Gender = member.Gender ?? "",
+                DateOfBirth = member.DateOfBirth ,
                 Status = member.Status,
                 IsVerified = member.IsVerified,
                 RoleName = role?.Name?.ToLower() ?? ""
