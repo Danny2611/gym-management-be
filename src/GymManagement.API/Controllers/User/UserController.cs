@@ -8,7 +8,7 @@ using GymManagement.Application.DTOs.User;
 namespace GymManagement.API.Controllers.User
 {
     [ApiController]
-    [Route("api/member")]
+    [Route("api/user")]
      [Authorize]
     public class MemberController : ControllerBase
     {
@@ -65,7 +65,7 @@ namespace GymManagement.API.Controllers.User
         /// <summary>
         /// Get current user's profile
         /// </summary>
-        [HttpGet("current-profile")]
+        [HttpGet("profile")]
         public async Task<IActionResult> GetCurrentProfile()
         
         {
@@ -164,7 +164,7 @@ namespace GymManagement.API.Controllers.User
         /// <summary>
         /// Update profile avatar
         /// </summary>
-        [HttpPut("avatar")]
+        [HttpPut("profile/avatar")]
         public async Task<IActionResult> UpdateAvatar([FromForm] UploadAvatarDto dto)
         {
             try
