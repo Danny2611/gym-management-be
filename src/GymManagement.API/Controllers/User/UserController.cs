@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using GymManagement.Application.DTOs.User;
 using GymManagement.Application.DTOs.User.Requests;
+using System.Security.Claims;
 
 namespace GymManagement.API.Controllers.User
 {

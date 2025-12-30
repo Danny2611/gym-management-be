@@ -440,7 +440,7 @@ namespace GymManagement.Application.Services
 
             // Calculate days remaining
             int daysRemaining = 0;
-            if (highestPriceMembership?.EndDate.HasValue == true)
+            if (highestPriceMembership?.EndDate != null)
             {
                 var today = DateTime.Now;
                 var endDate = highestPriceMembership.EndDate.Value;
