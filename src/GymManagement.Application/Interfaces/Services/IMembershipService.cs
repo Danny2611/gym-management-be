@@ -8,5 +8,6 @@ namespace GymManagement.Application.Interfaces.Services
         Task<List<MembershipResponse>> GetMemberMembershipsAsync(string memberId);
         Task<List<MembershipResponse>> GetActiveMemberMembershipsAsync(string memberId);
         Task<MembershipResponse> GetMembershipByIdAsync(string membershipId);
+        Task<MembershipResponse> PauseMembershipAsync(string membershipId);
     }
 }

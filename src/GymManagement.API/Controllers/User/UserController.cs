@@ -467,5 +467,42 @@ namespace GymManagement.API.Controllers.User
                 });
             }
         }
+
+        /// <summary>
+        /// patch: /api/member/my-package/pause
+        /// Temporary pause a package 
+        /// </summary>
+        [HttpPatch("my-package/pause")]
+        public async Task<IActionResult> PauseMembership([FromBody] PauseMembershipRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.MembershipId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "MembershipId là bắt buộc"
+                    });
+                }
+
+                var membership = await _membershipService.PauseMembershipAsync(request.MembershipId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã tạm dừng gói tập thành công",
+                    data = membership
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }
