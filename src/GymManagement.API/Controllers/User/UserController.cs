@@ -504,5 +504,42 @@ namespace GymManagement.API.Controllers.User
                 });
             }
         }
+
+        /// <summary>
+        /// patch: /api/member/my-package/resume
+        /// Resume a paused package
+        /// </summary>
+        [HttpPatch("my-package/resume")]
+        public async Task<IActionResult> ResumeMembership([FromBody] ResumeMembershipRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.MembershipId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "MembershipId là bắt buộc"
+                    });
+                }
+
+                var membership = await _membershipService.ResumeMembershipAsync(request.MembershipId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã kích hoạt lại gói tập thành công",
+                    data = membership
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }
