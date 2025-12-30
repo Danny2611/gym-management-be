@@ -4,6 +4,7 @@ using GymManagement.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using GymManagement.Application.DTOs.User;
+using GymManagement.Application.DTOs.User.Requests;
 
 namespace GymManagement.API.Controllers.User
 {
@@ -427,6 +428,42 @@ namespace GymManagement.API.Controllers.User
                 {
                     success = false,
                     message = "Lỗi server khi xử lý yêu cầu"
+                });
+            }
+        }
+
+        /// <summary>
+        /// get: /api/member/my-package/detail 
+        /// Get detail info of member's packages
+        /// </summary>
+        [HttpPost("my-package/detail")]
+        public async Task<IActionResult> GetMembershipDetail([FromBody] MembershipDetailRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.MembershipId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "MembershipId là bắt buộc"
+                    });
+                }
+
+                var membership = await _membershipService.GetMembershipByIdAsync(request.MembershipId);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = membership
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message
                 });
             }
         }

@@ -191,5 +191,66 @@ namespace GymManagement.Application.Services
 
             return response;
         }
+
+        public async Task<MembershipResponse> GetMembershipByIdAsync(string membershipId)
+        {
+            // Get the membership by ID
+            var membership = await _membershipRepository.GetByIdAsync(membershipId);
+
+            if (membership == null)
+            {
+                throw new Exception("Không tìm thấy thông tin gói tập đã đăng ký");
+            }
+
+            // Fetch package and payment details
+            var packageTask = _packageRepository.GetByIdAsync(membership.PackageId);
+            var paymentTask = _paymentRepository.GetByIdAsync(membership.PaymentId);
+
+            await Task.WhenAll(packageTask, paymentTask);
+
+            var package = packageTask.Result;
+            var payment = paymentTask.Result;
+
+            // Map to response DTO
+            var response = new MembershipResponse
+            {
+                Id = membership.Id,
+                MemberId = membership.MemberId,
+                PackageId = package != null ? new PackageInfo
+                {
+                    Id = package.Id,
+                    Name = package.Name,
+                    Price = package.Price,
+                    Duration = package.Duration,
+                    Description = package.Description,
+                    Benefits = package.Benefits,
+                    Status = package.Status,
+                    Category = package.Category,
+                    Popular = package.Popular,
+                    TrainingSessions = package.TrainingSessions,
+                    SessionDuration = package.SessionDuration
+                } : null,
+                PaymentId = payment != null ? new DTOs.User.Responses.PaymentInfo
+                {
+                    Id = payment.Id,
+                    Amount = payment.Amount,
+                    Status = payment.Status,
+                    PaymentMethod = payment.PaymentMethod,
+                    TransactionId = payment.TransactionId,
+                    CreatedAt = payment.CreatedAt
+                } : null,
+                StartDate = membership.StartDate,
+                EndDate = membership.EndDate,
+                AutoRenew = membership.AutoRenew,
+                Status = membership.Status,
+                AvailableSessions = membership.AvailableSessions,
+                UsedSessions = membership.UsedSessions,
+                LastSessionsReset = membership.LastSessionsReset,
+                CreatedAt = membership.CreatedAt,
+                UpdatedAt = membership.UpdatedAt
+            };
+
+            return response;
+        }
     }
 }
