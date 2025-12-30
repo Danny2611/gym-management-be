@@ -1,5 +1,6 @@
 using GymManagement.Application.Interfaces.Repositories;
 using GymManagement.Application.Interfaces.Services;
+using GymManagement.Application.DTOs.User.Responses;
 
 namespace GymManagement.Application.Services
 {
@@ -7,13 +8,19 @@ namespace GymManagement.Application.Services
     {
         private readonly IMembershipRepository _membershipRepository;
         private readonly IPackageDetailRepository _packageDetailRepository;
+        private readonly IPackageRepository _packageRepository;
+        private readonly IPaymentRepository _paymentRepository;
 
         public MembershipService(
             IMembershipRepository membershipRepository,
-            IPackageDetailRepository packageDetailRepository)
+            IPackageDetailRepository packageDetailRepository,
+            IPackageRepository packageRepository,
+            IPaymentRepository paymentRepository)
         {
             _membershipRepository = membershipRepository;
             _packageDetailRepository = packageDetailRepository;
+            _packageRepository = packageRepository;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<List<string>> GetMemberTrainingLocationsAsync(string memberId)
@@ -47,6 +54,74 @@ namespace GymManagement.Application.Services
             }
 
             return uniqueLocations.ToList();
+        }
+
+        public async Task<List<MembershipResponse>> GetMemberMembershipsAsync(string memberId)
+        {
+            // Get all memberships for the member
+            var memberships = await _membershipRepository.GetByMemberIdAsync(memberId);
+
+            if (memberships == null || memberships.Count == 0)
+            {
+                return new List<MembershipResponse>();
+            }
+
+            // Get unique package IDs and payment IDs
+            var packageIds = memberships.Select(m => m.PackageId).Distinct().ToList();
+            var paymentIds = memberships.Select(m => m.PaymentId).Distinct().ToList();
+
+            // Fetch all packages and payments in parallel
+            var packagesTask = _packageRepository.GetByIdsAsync(packageIds);
+            var paymentsTask = _paymentRepository.GetByIdsAsync(paymentIds);
+
+            await Task.WhenAll(packagesTask, paymentsTask);
+
+            var packages = packagesTask.Result.ToDictionary(p => p.Id);
+            var payments = paymentsTask.Result.ToDictionary(p => p.Id);
+
+            // Map memberships to response DTOs
+            var response = memberships
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new MembershipResponse
+                {
+                    Id = m.Id,
+                    MemberId = m.MemberId,
+                    PackageId = packages.ContainsKey(m.PackageId) ? new PackageInfo
+                    {
+                        Id = packages[m.PackageId].Id,
+                        Name = packages[m.PackageId].Name,
+                        Price = packages[m.PackageId].Price,
+                        Duration = packages[m.PackageId].Duration,
+                        Description = packages[m.PackageId].Description,
+                        Benefits = packages[m.PackageId].Benefits,
+                        Status = packages[m.PackageId].Status,
+                        Category = packages[m.PackageId].Category,
+                        Popular = packages[m.PackageId].Popular,
+                        TrainingSessions = packages[m.PackageId].TrainingSessions,
+                        SessionDuration = packages[m.PackageId].SessionDuration
+                    } : null,
+                    PaymentId = payments.ContainsKey(m.PaymentId) ? new DTOs.User.Responses.PaymentInfo
+                    {
+                        Id = payments[m.PaymentId].Id,
+                        Amount = payments[m.PaymentId].Amount,
+                        Status = payments[m.PaymentId].Status,
+                        PaymentMethod = payments[m.PaymentId].PaymentMethod,
+                        TransactionId = payments[m.PaymentId].TransactionId,
+                        CreatedAt = payments[m.PaymentId].CreatedAt
+                    } : null,
+                    StartDate = m.StartDate,
+                    EndDate = m.EndDate,
+                    AutoRenew = m.AutoRenew,
+                    Status = m.Status,
+                    AvailableSessions = m.AvailableSessions,
+                    UsedSessions = m.UsedSessions,
+                    LastSessionsReset = m.LastSessionsReset,
+                    CreatedAt = m.CreatedAt,
+                    UpdatedAt = m.UpdatedAt
+                })
+                .ToList();
+
+            return response;
         }
     }
 }

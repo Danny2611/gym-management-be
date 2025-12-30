@@ -1,8 +1,12 @@
 using GymManagement.Domain.Entities;
 
-public interface IPackageRepository
+namespace GymManagement.Application.Interfaces.Repositories
 {
-    Task<List<Package>> GetActiveAsync();
-    Task<Package?> GetByIdAsync(Guid id);
-    Task<PackageDetail?> GetDetailByPackageIdAsync(Guid packageId);
+    public interface IPackageRepository
+    {
+        Task<List<Package>> GetActiveAsync();
+        Task<Package?> GetByIdAsync(string id);
+        Task<List<Package>> GetByIdsAsync(List<string> ids);
+        Task<PackageDetail?> GetDetailByPackageIdAsync(string packageId);
+    }
 }
