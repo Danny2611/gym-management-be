@@ -392,5 +392,43 @@ namespace GymManagement.API.Controllers.User
                 });
             }
         }
+
+        /// <summary>
+        /// get list of member active training packages were registered
+        /// get: /api/member/my-package-active
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("my-package-active")]
+        public async Task<IActionResult> GetMyActivePackages()
+        {
+            try
+            {
+                var userId = GetUserId();
+                var memberships = await _membershipService.GetActiveMemberMembershipsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    count = memberships.Count,
+                    data = memberships
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server khi xử lý yêu cầu"
+                });
+            }
+        }
     }
 }
