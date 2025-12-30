@@ -1,4 +1,5 @@
 using GymManagement.Domain.Entities;
+using GymManagement.Application.Interfaces.Repositories;
 
 public class PackageService : IPackageService
 {

@@ -1,3 +1,4 @@
+using GymManagement.Application.DTOs;
 using GymManagement.Application.DTOs.User.Responses;
 
 namespace GymManagement.Application.Interfaces.Services
@@ -10,5 +11,6 @@ namespace GymManagement.Application.Interfaces.Services
         Task<MembershipResponse> GetMembershipByIdAsync(string membershipId);
         Task<MembershipResponse> PauseMembershipAsync(string membershipId);
         Task<MembershipResponse> ResumeMembershipAsync(string membershipId);
+        Task<MembershipDetailsResponse> GetMembershipDetailsAsync(string memberId);
     }
 }

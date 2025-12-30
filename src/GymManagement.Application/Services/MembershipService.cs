@@ -1,5 +1,6 @@
 using GymManagement.Application.Interfaces.Repositories;
 using GymManagement.Application.Interfaces.Services;
+using GymManagement.Application.DTOs;
 using GymManagement.Application.DTOs.User.Responses;
 
 namespace GymManagement.Application.Services
@@ -395,6 +396,78 @@ namespace GymManagement.Application.Services
             };
 
             return response;
+        }
+
+        public async Task<MembershipDetailsResponse> GetMembershipDetailsAsync(string memberId)
+        {
+            // Get member from repository (we need IMemberRepository to fetch member details)
+            // For now, we'll work with memberships directly
+            var memberships = await _membershipRepository.GetByMemberIdAsync(memberId);
+
+            // If no memberships found, return default response
+            if (memberships == null || memberships.Count == 0)
+            {
+                return new MembershipDetailsResponse
+                {
+                    MembershipId = "null",
+                    MemberName = "Unknown",
+                    MemberAvatar = "/placeholder-avatar.jpg",
+                    PackageId = "",
+                    PackageName = "Chưa đăng ký",
+                    PackageCategory = "basic",
+                    Status = "null",
+                    DaysRemaining = 0,
+                    SessionsRemaining = 0,
+                    TotalSessions = 0
+                };
+            }
+
+            // Filter memberships by status: prefer 'active' then 'expired'
+            var activeMemberships = memberships.Where(m => m.Status == "active").ToList();
+            var expiredMemberships = memberships.Where(m => m.Status == "expired").ToList();
+
+            var selectedMembership = activeMemberships.FirstOrDefault() ?? expiredMemberships.FirstOrDefault() ?? memberships.FirstOrDefault();
+
+            // Find membership with highest price package
+            var packageIds = memberships.Select(m => m.PackageId).Distinct().ToList();
+            var packages = await _packageRepository.GetByIdsAsync(packageIds);
+            
+            var highestPriceMembership = memberships.OrderByDescending(m =>
+            {
+                var pkg = packages.FirstOrDefault(p => p.Id == m.PackageId);
+                return pkg?.Price ?? 0;
+            }).FirstOrDefault();
+
+            // Calculate days remaining
+            int daysRemaining = 0;
+            if (highestPriceMembership?.EndDate.HasValue == true)
+            {
+                var today = DateTime.Now;
+                var endDate = highestPriceMembership.EndDate.Value;
+                var timespan = endDate - today;
+                daysRemaining = Math.Max(0, (int)Math.Ceiling(timespan.TotalDays));
+            }
+
+            // Calculate sessions remaining
+            var sessionsRemaining = highestPriceMembership?.AvailableSessions - highestPriceMembership?.UsedSessions ?? 0;
+            var totalSessions = highestPriceMembership?.AvailableSessions ?? 0;
+
+            // Get package info for highest price membership
+            var packageInfo = packages.FirstOrDefault(p => p.Id == highestPriceMembership?.PackageId);
+
+            return new MembershipDetailsResponse
+            {
+                MembershipId = selectedMembership.Id,
+                MemberName = memberId, // We'd need IMemberRepository to get actual member name
+                MemberAvatar = "/placeholder-avatar.jpg", // We'd need IMemberRepository
+                PackageId = packageInfo?.Id ?? "",
+                PackageName = packageInfo?.Name ?? "Không có thông tin",
+                PackageCategory = packageInfo?.Category ?? "basic",
+                Status = selectedMembership?.Status ?? "unknown",
+                DaysRemaining = daysRemaining,
+                SessionsRemaining = (int)sessionsRemaining,
+                TotalSessions = (int)totalSessions
+            };
         }
     }
 }

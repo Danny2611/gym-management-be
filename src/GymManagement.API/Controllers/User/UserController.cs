@@ -541,5 +541,44 @@ namespace GymManagement.API.Controllers.User
                 });
             }
         }
+
+        /// <summary>
+        /// get: /api/member/my-package/infor-membership
+        /// Lấy danh sách gói tập đã đăng ký của hội viên
+        /// get list of member training packages were registered
+        /// </summary>
+        [HttpGet("my-package/infor-membership")]
+        public async Task<IActionResult> GetMembershipDetails()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Bạn cần đăng nhập để xem thông tin hội viên"
+                    });
+                }
+
+                var membershipDetails = await _membershipService.GetMembershipDetailsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = membershipDetails
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }
