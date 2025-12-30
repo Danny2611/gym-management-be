@@ -19,6 +19,8 @@ namespace GymManagement.Infrastructure.Data
 
         public IMongoCollection<Member> Members => _database.GetCollection<Member>("members");
         public IMongoCollection<Role> Roles => _database.GetCollection<Role>("roles");
+        public IMongoCollection<Membership> Memberships => _database.GetCollection<Membership>("memberships");
+        public IMongoCollection<PackageDetail> PackageDetails => _database.GetCollection<PackageDetail>("packagedetails");
         // Thêm các collection khác khi cần
         // public IMongoCollection<Package> Packages => _database.GetCollection<Package>("packages");
         // public IMongoCollection<Trainer> Trainers => _database.GetCollection<Trainer>("trainers");

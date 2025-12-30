@@ -13,10 +13,14 @@ namespace GymManagement.API.Controllers.User
     public class MemberController : ControllerBase
     {
         private readonly IMemberService _memberService;
+        private readonly IMembershipService _membershipService;
 
-        public MemberController(IMemberService memberService)
+        public MemberController(
+            IMemberService memberService,
+            IMembershipService membershipService)
         {
             _memberService = memberService;
+            _membershipService = membershipService;
         }
 
         /// <summary>
@@ -309,6 +313,45 @@ namespace GymManagement.API.Controllers.User
                 {
                     success = false,
                     message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// get all locations that member could train based on their membership 
+        ///</summary>
+        [HttpGet("training-locations")]
+        public async Task<IActionResult> GetTrainingLocations()
+        {
+            try
+            {
+                var userId = GetUserId();
+                var locations = await _membershipService.GetMemberTrainingLocationsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    count = locations.Count,
+                    data = locations,
+                    message = locations.Count == 0 
+                        ? "Bạn chưa đăng ký gói tập nào" 
+                        : null
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server khi xử lý yêu cầu"
                 });
             }
         }
