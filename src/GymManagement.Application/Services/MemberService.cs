@@ -277,5 +277,15 @@ namespace GymManagement.Application.Services
             await _memberRepository.UpdateAsync(member.Id, member);
             return true;
         }
+
+        public async Task<bool> DeleteMemberAsync(string memberId)
+        {
+            var member = await _memberRepository.GetByIdAsync(memberId);
+            if (member == null)
+                return false;
+
+            await _memberRepository.DeleteAsync(memberId);
+            return true;
+        }
     }
 }

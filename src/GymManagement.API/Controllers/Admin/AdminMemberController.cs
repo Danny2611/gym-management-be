@@ -47,10 +47,14 @@ namespace GymManagement.API.Controllers.Admin
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id, [FromBody] DeleteMemberRequest request)
+        public async Task<IActionResult> Delete(string id)
         {
-            await _memberService.DeactivateAccountAsync(id, request.Password);
-            return Ok(new { success = true, message = "Vô hiệu hóa member thành công" });
+            var result = await _memberService.DeleteMemberAsync(id);
+            if (!result)
+            {
+                return NotFound(new { success = false, message = "Không tìm thấy member" });
+            }
+            return Ok(new { success = true, message = "Xóa member thành công" });
         }
     }
 

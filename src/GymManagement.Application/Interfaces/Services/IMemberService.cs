@@ -18,5 +18,6 @@ namespace GymManagement.Application.Interfaces.Services
         Task<string> UpdateAvatarAsync(string memberId, IFormFile avatarFile);
         Task<bool> UpdateEmailAsync(string memberId, string newEmail);
         Task<bool> DeactivateAccountAsync(string memberId, string password);
+        Task<bool> DeleteMemberAsync(string memberId);
     }
 }
