@@ -1,4 +1,5 @@
 using GymManagement.Domain.Entities;
+using GymManagement.Application.Interfaces.Repositories;
 
 public class PackageService : IPackageService
 {
@@ -20,10 +21,10 @@ public class PackageService : IPackageService
 
     public async Task<object?> GetPackageByIdAsync(Guid id)
     {
-        var package = await _packageRepository.GetByIdAsync(id);
+        var package = await _packageRepository.GetByIdAsync(id.ToString());
         if (package == null) return null;
 
-        var detail = await _packageRepository.GetDetailByPackageIdAsync(id);
+        var detail = await _packageRepository.GetDetailByPackageIdAsync(id.ToString());
 
         var now = DateTime.UtcNow;
         var promotion = await _promotionRepository

@@ -4,6 +4,8 @@ using GymManagement.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using GymManagement.Application.DTOs.User;
+using GymManagement.Application.DTOs.User.Requests;
+using System.Security.Claims;
 
 namespace GymManagement.API.Controllers.User
 {
@@ -13,10 +15,14 @@ namespace GymManagement.API.Controllers.User
     public class MemberController : ControllerBase
     {
         private readonly IMemberService _memberService;
+        private readonly IMembershipService _membershipService;
 
-        public MemberController(IMemberService memberService)
+        public MemberController(
+            IMemberService memberService,
+            IMembershipService membershipService)
         {
             _memberService = memberService;
+            _membershipService = membershipService;
         }
 
         /// <summary>
@@ -301,6 +307,269 @@ namespace GymManagement.API.Controllers.User
                 {
                     success = false,
                     message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// get all locations that member could train based on their membership 
+        ///</summary>
+        [HttpGet("training-locations")]
+        public async Task<IActionResult> GetTrainingLocations()
+        {
+            try
+            {
+                var userId = GetUserId();
+                var locations = await _membershipService.GetMemberTrainingLocationsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    count = locations.Count,
+                    data = locations,
+                    message = locations.Count == 0 
+                        ? "Bạn chưa đăng ký gói tập nào" 
+                        : null
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server khi xử lý yêu cầu"
+                });
+            }
+        }
+
+        /// <summary>
+        /// get list of member training packages were registered 
+        /// get: /api/member/my-package
+        /// </summary>
+        [HttpGet("my-package")]
+        public async Task<IActionResult> GetMyPackages()
+        {
+            try
+            {
+                var userId = GetUserId();
+                var memberships = await _membershipService.GetMemberMembershipsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    count = memberships.Count,
+                    data = memberships
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server khi xử lý yêu cầu"
+                });
+            }
+        }
+
+        /// <summary>
+        /// get list of member active training packages were registered
+        /// get: /api/member/my-package-active
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("my-package-active")]
+        public async Task<IActionResult> GetMyActivePackages()
+        {
+            try
+            {
+                var userId = GetUserId();
+                var memberships = await _membershipService.GetActiveMemberMembershipsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    count = memberships.Count,
+                    data = memberships
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server khi xử lý yêu cầu"
+                });
+            }
+        }
+
+        /// <summary>
+        /// get: /api/member/my-package/detail 
+        /// Get detail info of member's packages
+        /// </summary>
+        [HttpPost("my-package/detail")]
+        public async Task<IActionResult> GetMembershipDetail([FromBody] MembershipDetailRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.MembershipId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "MembershipId là bắt buộc"
+                    });
+                }
+
+                var membership = await _membershipService.GetMembershipByIdAsync(request.MembershipId);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = membership
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// patch: /api/member/my-package/pause
+        /// Temporary pause a package 
+        /// </summary>
+        [HttpPatch("my-package/pause")]
+        public async Task<IActionResult> PauseMembership([FromBody] PauseMembershipRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.MembershipId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "MembershipId là bắt buộc"
+                    });
+                }
+
+                var membership = await _membershipService.PauseMembershipAsync(request.MembershipId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã tạm dừng gói tập thành công",
+                    data = membership
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// patch: /api/member/my-package/resume
+        /// Resume a paused package
+        /// </summary>
+        [HttpPatch("my-package/resume")]
+        public async Task<IActionResult> ResumeMembership([FromBody] ResumeMembershipRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.MembershipId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "MembershipId là bắt buộc"
+                    });
+                }
+
+                var membership = await _membershipService.ResumeMembershipAsync(request.MembershipId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã kích hoạt lại gói tập thành công",
+                    data = membership
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// get: /api/member/my-package/infor-membership
+        /// Lấy danh sách gói tập đã đăng ký của hội viên
+        /// get list of member training packages were registered
+        /// </summary>
+        [HttpGet("my-package/infor-membership")]
+        public async Task<IActionResult> GetMembershipDetails()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Bạn cần đăng nhập để xem thông tin hội viên"
+                    });
+                }
+
+                var membershipDetails = await _membershipService.GetMembershipDetailsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = membershipDetails
                 });
             }
             catch (Exception ex)
