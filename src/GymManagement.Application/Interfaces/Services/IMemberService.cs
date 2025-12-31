@@ -10,7 +10,7 @@ namespace GymManagement.Application.Interfaces.Services
         // Basic CRUD
         Task<List<Member>> GetAllMembersAsync();
         Task<Member> GetMemberByIdAsync(string id);
-        Task<Member> CreateMemberAsync(Member member);
+        Task<Member> CreateMemberAsync(CreateMemberRequest request);
 
         // Profile Management
         Task<MemberProfileDto> GetCurrentProfileAsync(string userId);
@@ -18,5 +18,6 @@ namespace GymManagement.Application.Interfaces.Services
         Task<string> UpdateAvatarAsync(string memberId, IFormFile avatarFile);
         Task<bool> UpdateEmailAsync(string memberId, string newEmail);
         Task<bool> DeactivateAccountAsync(string memberId, string password);
+        Task<bool> DeleteMemberAsync(string memberId);
     }
 }

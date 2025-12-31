@@ -43,17 +43,32 @@ namespace GymManagement.Application.Services
             return member;
         }
 
-        public async Task<Member> CreateMemberAsync(Member member)
+        public async Task<Member> CreateMemberAsync(CreateMemberRequest request)
         {
             // Check email duplicate
-            var existingMember = await _memberRepository.GetByEmailAsync(member.Email);
+            var existingMember = await _memberRepository.GetByEmailAsync(request.Email);
             if (existingMember != null)
             {
-                throw new Exception("Email already exists");
+                throw new Exception("Email đã tồn tại");
             }
 
-            member.CreatedAt = DateTime.UtcNow;
-            member.UpdatedAt = DateTime.UtcNow;
+            // Create member entity from DTO
+            var member = new Member
+            {
+                Name = request.Name,
+                Email = request.Email,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Gender = request.Gender,
+                Phone = request.Phone,
+                DateOfBirth = request.DateOfBirth,
+                Address = request.Address,
+                Avatar = request.Avatar,
+                Role = request.Role,
+                Status = request.Status,
+                IsVerified = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             return await _memberRepository.CreateAsync(member);
         }
@@ -80,7 +95,6 @@ namespace GymManagement.Application.Services
                 Address = member.Address ?? "",
                 Avatar = member.Avatar ?? "",
                 Gender = member.Gender ?? "",
-                DateOfBirth = member.DateOfBirth ,
                 Status = member.Status,
                 IsVerified = member.IsVerified,
                 RoleName = role?.Name?.ToLower() ?? ""
@@ -276,6 +290,16 @@ namespace GymManagement.Application.Services
             member.UpdatedAt = DateTime.UtcNow;
 
             await _memberRepository.UpdateAsync(member.Id, member);
+            return true;
+        }
+
+        public async Task<bool> DeleteMemberAsync(string memberId)
+        {
+            var member = await _memberRepository.GetByIdAsync(memberId);
+            if (member == null)
+                return false;
+
+            await _memberRepository.DeleteAsync(memberId);
             return true;
         }
     }
