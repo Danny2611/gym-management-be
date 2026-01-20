@@ -33,8 +33,7 @@ namespace GymManagement.Domain.Entities
         [BsonElement("status")]
         public string Status { get; set; } = "inactive"; // active, inactive
 
-        [BsonElement("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
 
         [BsonElement("category")]
         public string Category { get; set; } // basic, premium, etc.
@@ -47,6 +46,12 @@ namespace GymManagement.Domain.Entities
 
         [BsonElement("session_duration")]
         public int SessionDuration { get; set; } // phút
+
+        [BsonElement("deleted_at")]
+        public DateTime? DeletedAt { get; set; }
+
+        [BsonElement("created_at")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [BsonElement("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.Now;

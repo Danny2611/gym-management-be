@@ -23,7 +23,15 @@ namespace GymManagement.Infrastructure.Data
         public IMongoCollection<PackageDetail> PackageDetails => _database.GetCollection<PackageDetail>("packagedetails");
         public IMongoCollection<Package> Packages => _database.GetCollection<Package>("packages");
         public IMongoCollection<Payment> Payments => _database.GetCollection<Payment>("payments");
-        // Thêm các collection khác khi cần
-        // public IMongoCollection<Trainer> Trainers => _database.GetCollection<Trainer>("trainers");
+        public IMongoCollection<Promotion> Promotions => _database.GetCollection<Promotion>("promotions");
+
+        public IMongoCollection<Appointment> Appointments => _database.GetCollection<Appointment>("appointments");
+        public IMongoCollection<Trainer> Trainers => _database.GetCollection<Trainer>("trainers");
+
+        public IMongoCollection<WorkoutSchedule> WorkoutSchedules => _database.GetCollection<WorkoutSchedule>("WorkoutSchedules");
+        public IMongoCollection<Progress> Progress => _database.GetCollection<Progress>("progress");
+        public IMongoCollection<BlogPost> BlogPosts => _database.GetCollection<BlogPost>("blogposts");
+        public IMongoCollection<BlogCategory> BlogCategories => _database.GetCollection<BlogCategory>("blogcategories");
+
     }
 }

@@ -7,7 +7,7 @@ namespace GymManagement.Application.DTOs.Auth
         [Required(ErrorMessage = "Email không được để trống")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         public string Email { get; set; }
-        
+
         [Required(ErrorMessage = "Mật khẩu mới không được để trống")]
         [MinLength(8, ErrorMessage = "Mật khẩu phải ít nhất 8 ký tự")]
         [RegularExpression(

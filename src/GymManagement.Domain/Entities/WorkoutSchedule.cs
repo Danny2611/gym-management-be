@@ -19,7 +19,7 @@ namespace GymManagement.Domain.Entities
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
-        [BsonElement("timeStart")]
+        [BsonElement("time_start")]
         public DateTime TimeStart { get; set; }
 
         [BsonElement("duration")]

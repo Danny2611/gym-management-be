@@ -1,9 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using GymManagement.Application.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using GymManagement.Application.Interfaces.Services;
+
 
 namespace GymManagement.Infrastructure.Identity
 {
@@ -29,7 +30,7 @@ namespace GymManagement.Infrastructure.Identity
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] ?? "your-secret-key-min-32-characters-long"));
-            
+
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -56,7 +57,7 @@ namespace GymManagement.Infrastructure.Identity
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] ?? "your-secret-key-min-32-characters-long"));
-            
+
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
