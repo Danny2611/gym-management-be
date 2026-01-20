@@ -19,7 +19,7 @@ public class PackagesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetPackageById(Guid id)
+    public async Task<IActionResult> GetPackageById(string id)
     {
         var result = await _packageService.GetPackageByIdAsync(id);
         if (result == null)

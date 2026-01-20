@@ -1,8 +1,8 @@
 using GymManagement.Application.DTOs.Auth;
-using GymManagement.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using GymManagement.Application.Interfaces.Services.User;
 namespace GymManagement.API.Controllers.Auth
 {
     [ApiController]
@@ -25,7 +25,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 var response = await _authService.LoginAsync(request);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -52,12 +52,12 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 var response = await _authService.RegisterAsync(request);
-                
+
                 return Ok(new
                 {
                     success = true,
                     data = response,
-                     message = response.Message
+                    message = response.Message
                 });
             }
             catch (Exception ex)
@@ -79,7 +79,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 var response = await _authService.VerifyOTPAsync(request);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -98,12 +98,12 @@ namespace GymManagement.API.Controllers.Auth
         }
 
         [HttpPost("verify-otp-forgot-password")]
-        public async Task<IActionResult> VerifyOTPForgotPassword([FromBody] VerifyOTPRequest request) 
+        public async Task<IActionResult> VerifyOTPForgotPassword([FromBody] VerifyOTPRequest request)
         {
             try
             {
-               await _authService.VerifyOTPForgotPasswordAsync(request);
-                
+                await _authService.VerifyOTPForgotPasswordAsync(request);
+
                 return Ok(new
                 {
                     success = true,
@@ -129,7 +129,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 await _authService.ResendOTPAsync(request.Email);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -156,7 +156,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 await _authService.ForgotPasswordAsync(request.Email);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -182,7 +182,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 await _authService.ResetPasswordAsync(request);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -209,7 +209,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 var userId = User.FindFirst("userId")?.Value;
-                
+
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized(new
@@ -220,7 +220,7 @@ namespace GymManagement.API.Controllers.Auth
                 }
 
                 await _authService.ChangePasswordAsync(userId, request);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -247,7 +247,7 @@ namespace GymManagement.API.Controllers.Auth
             try
             {
                 var userId = User.FindFirst("userId")?.Value;
-                
+
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized(new
@@ -258,7 +258,7 @@ namespace GymManagement.API.Controllers.Auth
                 }
 
                 var isValid = await _authService.ValidateCurrentPasswordAsync(userId, request.CurrentPassword);
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -276,6 +276,6 @@ namespace GymManagement.API.Controllers.Auth
             }
         }
 
-       
+
     }
 }

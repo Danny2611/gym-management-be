@@ -37,7 +37,7 @@ namespace GymManagement.Domain.Entities
 
         [BsonElement("role")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string  Role { get; set; }
+        public string Role { get; set; }
 
         [BsonElement("status")]
         public string Status { get; set; } = "active"; // active, inactive, pending, banned
@@ -57,11 +57,11 @@ namespace GymManagement.Domain.Entities
         [BsonElement("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-public bool VerifyPassword(string inputPassword)
-{
-    return BCrypt.Net.BCrypt.Verify(inputPassword, this.Password);
-}
+        public bool VerifyPassword(string inputPassword)
+        {
+            return BCrypt.Net.BCrypt.Verify(inputPassword, this.Password);
+        }
 
 
-}
+    }
 }

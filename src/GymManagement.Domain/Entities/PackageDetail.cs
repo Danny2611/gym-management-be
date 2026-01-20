@@ -31,6 +31,9 @@ namespace GymManagement.Domain.Entities
         [BsonElement("status")]
         public string Status { get; set; } = "active"; // active, inactive
 
+        [BsonElement("deleted_at")]
+        public DateTime? DeletedAt { get; set; }
+
         [BsonElement("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

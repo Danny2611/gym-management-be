@@ -1,5 +1,8 @@
+// GymManagement.Domain/Entities/Payment.cs
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+
+
 
 namespace GymManagement.Domain.Entities
 {
@@ -10,12 +13,10 @@ namespace GymManagement.Domain.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        // Quan hệ với Member
         [BsonElement("member_id")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string MemberId { get; set; }
 
-        // Quan hệ với Package
         [BsonElement("package_id")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string PackageId { get; set; }
@@ -24,34 +25,44 @@ namespace GymManagement.Domain.Entities
         public decimal Amount { get; set; }
 
         [BsonElement("status")]
-        public string Status { get; set; } = "pending"; // pending, completed, failed, cancelled
+        public string Status { get; set; } = "pending";
 
         [BsonElement("paymentMethod")]
-        public string PaymentMethod { get; set; } // ví dụ: "momo", "credit_card", "cash"
+        public string PaymentMethod { get; set; }
 
         [BsonElement("transactionId")]
         public string TransactionId { get; set; }
 
-        // Thông tin chi tiết thanh toán (JSON nested)
+        // ✅ QUAN TRỌNG NHẤT
         [BsonElement("paymentInfo")]
-        public PaymentInfo PaymentInfo { get; set; }
+        public BsonDocument PaymentInfo { get; set; } = new();
+
+        [BsonElement("promotion")]
+        public AppliedPromotion? Promotion { get; set; }
+
 
         [BsonElement("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("updated_at")]
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
-
-    public class PaymentInfo
+    public class AppliedPromotion
     {
-        [BsonElement("requestId")]
-        public string RequestId { get; set; }
+        [BsonElement("promotion_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string PromotionId { get; set; }
 
-        [BsonElement("payUrl")]
-        public string PayUrl { get; set; }
+        [BsonElement("name")]
+        public string Name { get; set; }
 
-        [BsonElement("orderId")]
-        public string OrderId { get; set; }
+        [BsonElement("discount")]
+        public decimal Discount { get; set; }
+
+        [BsonElement("original_price")]
+        public decimal OriginalPrice { get; set; }
+
+        [BsonElement("discounted_price")]
+        public decimal DiscountedPrice { get; set; }
     }
 }

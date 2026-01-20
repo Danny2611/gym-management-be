@@ -1,5 +1,8 @@
 // GymManagement.Infrastructure/Services/FileStorageService.cs
-using GymManagement.Application.Interfaces.Services;
+
+
+using global::GymManagement.Application.Interfaces.Services.User;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 

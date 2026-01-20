@@ -1,4 +1,5 @@
-using GymManagement.Application.Interfaces.Services;
+
+using GymManagement.Application.Interfaces.Services.User;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
@@ -18,18 +19,18 @@ namespace GymManagement.Infrastructure.Services
         public async Task SendOTPEmailAsync(string email, string otp)
         {
             var message = new MimeMessage();
-            
+
             // From
             var fromName = _configuration["EmailSettings:FromName"];
             var fromEmail = _configuration["EmailSettings:FromEmail"];
             message.From.Add(new MailboxAddress(fromName, fromEmail));
-            
+
             // To
             message.To.Add(new MailboxAddress("", email));
-            
+
             // Subject
             message.Subject = "Xác thực tài khoản FittLife";
-            
+
             // Body
             var bodyBuilder = new BodyBuilder
             {
@@ -47,9 +48,9 @@ namespace GymManagement.Infrastructure.Services
                     </div>
                 "
             };
-            
+
             message.Body = bodyBuilder.ToMessageBody();
-            
+
             // Send email
             using (var client = new SmtpClient())
             {
@@ -57,7 +58,7 @@ namespace GymManagement.Infrastructure.Services
                 var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
                 var smtpUser = _configuration["EmailSettings:SmtpUser"];
                 var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-                
+
                 await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
                 await client.AuthenticateAsync(smtpUser, smtpPassword);
                 await client.SendAsync(message);
@@ -68,13 +69,13 @@ namespace GymManagement.Infrastructure.Services
         public async Task SendWelcomeEmailAsync(string email, string name)
         {
             var message = new MimeMessage();
-            
+
             var fromName = _configuration["EmailSettings:FromName"];
             var fromEmail = _configuration["EmailSettings:FromEmail"];
             message.From.Add(new MailboxAddress(fromName, fromEmail));
             message.To.Add(new MailboxAddress(name, email));
             message.Subject = "Chào mừng đến với FittLife!";
-            
+
             var bodyBuilder = new BodyBuilder
             {
                 HtmlBody = $@"
@@ -96,37 +97,37 @@ namespace GymManagement.Infrastructure.Services
                     </div>
                 "
             };
-            
+
             message.Body = bodyBuilder.ToMessageBody();
-            
+
             using (var client = new SmtpClient())
             {
                 var smtpHost = _configuration["EmailSettings:SmtpHost"];
                 var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
                 var smtpUser = _configuration["EmailSettings:SmtpUser"];
                 var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-                
+
                 await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
                 await client.AuthenticateAsync(smtpUser, smtpPassword);
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
         }
-    
+
         public async Task SendChangeEmailOtpAsync(string email, string otp)
-{
-    var message = new MimeMessage();
+        {
+            var message = new MimeMessage();
 
-    var fromName = _configuration["EmailSettings:FromName"];
-    var fromEmail = _configuration["EmailSettings:FromEmail"];
-    message.From.Add(new MailboxAddress(fromName, fromEmail));
+            var fromName = _configuration["EmailSettings:FromName"];
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
 
-    message.To.Add(new MailboxAddress("", email));
-    message.Subject = "Xác nhận thay đổi email – FittLife";
+            message.To.Add(new MailboxAddress("", email));
+            message.Subject = "Xác nhận thay đổi email – FittLife";
 
-    var bodyBuilder = new BodyBuilder
-    {
-        HtmlBody = $@"
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = $@"
         <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"">
             <h2 style=""color: #ff9800;"">Xác nhận thay đổi email</h2>
             <p>Bạn vừa yêu cầu <strong>thay đổi địa chỉ email</strong> cho tài khoản FittLife.</p>
@@ -154,38 +155,38 @@ namespace GymManagement.Infrastructure.Services
                 <strong>Đội ngũ FittLife</strong>
             </p>
         </div>"
-    };
+            };
 
-    message.Body = bodyBuilder.ToMessageBody();
+            message.Body = bodyBuilder.ToMessageBody();
 
-    using (var client = new SmtpClient())
-    {
-        var smtpHost = _configuration["EmailSettings:SmtpHost"];
-        var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-        var smtpUser = _configuration["EmailSettings:SmtpUser"];
-        var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+            using (var client = new SmtpClient())
+            {
+                var smtpHost = _configuration["EmailSettings:SmtpHost"];
+                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                var smtpUser = _configuration["EmailSettings:SmtpUser"];
+                var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
 
-        await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(smtpUser, smtpPassword);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
-    }
-}
+                await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(smtpUser, smtpPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+        }
 
         public async Task SendResetPasswordOtpAsync(string email, string otp)
-{
-    var message = new MimeMessage();
+        {
+            var message = new MimeMessage();
 
-    var fromName = _configuration["EmailSettings:FromName"];
-    var fromEmail = _configuration["EmailSettings:FromEmail"];
-    message.From.Add(new MailboxAddress(fromName, fromEmail));
+            var fromName = _configuration["EmailSettings:FromName"];
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
 
-    message.To.Add(new MailboxAddress("", email));
-    message.Subject = "Đặt lại mật khẩu FittLife";
+            message.To.Add(new MailboxAddress("", email));
+            message.Subject = "Đặt lại mật khẩu FittLife";
 
-    var bodyBuilder = new BodyBuilder
-    {
-        HtmlBody = $@"
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = $@"
         <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"">
             <h2 style=""color: #f44336;"">Yêu cầu đặt lại mật khẩu</h2>
 
@@ -215,37 +216,37 @@ namespace GymManagement.Infrastructure.Services
                 <strong>Đội ngũ FittLife</strong>
             </p>
         </div>"
-    };
+            };
 
-    message.Body = bodyBuilder.ToMessageBody();
+            message.Body = bodyBuilder.ToMessageBody();
 
-    using (var client = new SmtpClient())
-    {
-        var smtpHost = _configuration["EmailSettings:SmtpHost"];
-        var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-        var smtpUser = _configuration["EmailSettings:SmtpUser"];
-        var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+            using (var client = new SmtpClient())
+            {
+                var smtpHost = _configuration["EmailSettings:SmtpHost"];
+                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                var smtpUser = _configuration["EmailSettings:SmtpUser"];
+                var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
 
-        await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(smtpUser, smtpPassword);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
-    }
-}
-public async Task SendPasswordChangedNotificationAsync(string email, string name)
-{
-    var message = new MimeMessage();
+                await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(smtpUser, smtpPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+        }
+        public async Task SendPasswordChangedNotificationAsync(string email, string name)
+        {
+            var message = new MimeMessage();
 
-    var fromName = _configuration["EmailSettings:FromName"];
-    var fromEmail = _configuration["EmailSettings:FromEmail"];
-    message.From.Add(new MailboxAddress(fromName, fromEmail));
+            var fromName = _configuration["EmailSettings:FromName"];
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
 
-    message.To.Add(new MailboxAddress(name, email));
-    message.Subject = "Mật khẩu đã được thay đổi";
+            message.To.Add(new MailboxAddress(name, email));
+            message.Subject = "Mật khẩu đã được thay đổi";
 
-    var bodyBuilder = new BodyBuilder
-    {
-        HtmlBody = $@"
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = $@"
         <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"">
             <h2 style=""color: #4CAF50;"">Mật khẩu đã được thay đổi</h2>
 
@@ -273,25 +274,25 @@ public async Task SendPasswordChangedNotificationAsync(string email, string name
                 <strong>Đội ngũ FittLife</strong>
             </p>
         </div>"
-    };
+            };
 
-    message.Body = bodyBuilder.ToMessageBody();
+            message.Body = bodyBuilder.ToMessageBody();
 
-    using (var client = new SmtpClient())
-    {
-        var smtpHost = _configuration["EmailSettings:SmtpHost"];
-        var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-        var smtpUser = _configuration["EmailSettings:SmtpUser"];
-        var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+            using (var client = new SmtpClient())
+            {
+                var smtpHost = _configuration["EmailSettings:SmtpHost"];
+                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                var smtpUser = _configuration["EmailSettings:SmtpUser"];
+                var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
 
-        await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(smtpUser, smtpPassword);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+                await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(smtpUser, smtpPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+        }
+
     }
-}
 
-    }
 
-    
 }

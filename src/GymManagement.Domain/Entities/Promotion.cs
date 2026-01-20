@@ -19,7 +19,7 @@ namespace GymManagement.Domain.Entities
         public string Description { get; set; }
 
         [BsonElement("discount")]
-        public double Discount { get; set; } // Phần trăm giảm giá
+        public decimal Discount { get; set; }
 
         [BsonElement("start_date")]
         public DateTime StartDate { get; set; }

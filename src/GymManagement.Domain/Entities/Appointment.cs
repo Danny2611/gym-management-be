@@ -49,6 +49,7 @@ namespace GymManagement.Domain.Entities
     }
 
     // Embedded document cho thời gian start - end
+    [BsonIgnoreExtraElements]
     public class AppointmentTime
     {
         [BsonElement("start")]
